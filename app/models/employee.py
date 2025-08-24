@@ -10,7 +10,6 @@ class Employee(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     first_name: str = Field(index=True)
     last_name: str = Field(index=True)
-    badge_number: int = Field(default=None, index=True)
     email : str = Field(index=True, unique=True)
     password: str = Field(index=True)
     number: str = Field(default=None, index=True)
@@ -19,7 +18,7 @@ class Employee(SQLModel, table=True):
     cnss_number: str = Field(default=None, index=True)
     contract_type: ContractType = Field(default=None, index=True)
     gender : Gender = Field(default=None, index=True)
-    Account_status: AccountStatus = Field(default=AccountStatus.inactive)
+    account_status: AccountStatus = Field(default=AccountStatus.inactive)
     phone_number : str = Field(default=None, index=True)
     created_at: datetime = Field(default=datetime.now(UTC), index=True)
 
