@@ -5,11 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python : app.main",
+            "name": "Python Debugger",
             "type": "debugpy",
-            "module": "app.main",
             "request": "launch",
-            "justMyCode": false,
+            "module": "backend.app.main",
+            "console": "integratedTerminal",
+            "args": ["--reload"],
             "cwd": "${workspaceFolder}"
         }
     ]
