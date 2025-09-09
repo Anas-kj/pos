@@ -1,0 +1,14 @@
+<div class="card">
+    <p-menubar [model]="menuBarItems"></p-menubar>
+</div>
+
+<div class="card flex justify-content-center">
+    <p-sidebar [(visible)]="sidebarVisible">  
+        <div class="card flex justify-content-center">
+            <p-menu [model]="menuItems"></p-menu>
+        </div>
+    </p-sidebar>
+    <!-- <p-button (click)="sidebarVisible = true" icon="pi pi-arrow-right"></p-button> -->
+</div>
+
+<router-outlet></router-outlet>

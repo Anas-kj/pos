@@ -1,0 +1,41 @@
+import { NgModule } from '@angular/core';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { EmployeesComponent } from './employees/employees.component';
+import { AddEmployeeComponent } from './add-employee/add-employee.component';
+import { EditEmployeeComponent } from './edit-employee/edit-employee.component';
+import { DeleteEmployeeComponent } from './delete-employee/delete-employee.component';
+import { ImportEmployeesComponent } from './import-employees/import-employees.component';
+import { MenubarModule } from 'primeng/menubar';
+import { SidebarModule } from 'primeng/sidebar';
+import { MenuModule } from 'primeng/menu';
+import { TableModule } from 'primeng/table';
+import { PageNotFoundComponent } from './page-not-found/page-not-found.component'; 
+import { HttpClientModule } from '@angular/common/http';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    EmployeesComponent,
+    AddEmployeeComponent,
+    EditEmployeeComponent,
+    DeleteEmployeeComponent,
+    ImportEmployeesComponent,
+    PageNotFoundComponent,
+  ],
+  imports: [
+    HttpClientModule,
+    BrowserModule,
+    AppRoutingModule,
+    BrowserAnimationsModule,
+    SidebarModule,
+    MenubarModule,
+    MenuModule,
+    TableModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
