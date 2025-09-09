@@ -8,6 +8,6 @@ class BasicEnum(Enum):
     
     def is_valid_enum_value(cls, field):
         for val in cls:
-            if field.upper() == val.value.upper():
+            if field.strip().upper() == val.value.upper():
                 return val
         return None

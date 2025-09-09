@@ -1,6 +1,6 @@
 from datetime import datetime, date
-from typing import List, Optional
-from sqlmodel import SQLModel, Field
+from typing import List, Optional, Dict
+from sqlmodel import SQLModel
 
 from backend.app.enums.matchyComparer import Comparer
 from .enums import ContractType, Gender, RoleType, ConditionProperty, FieldType
@@ -58,3 +58,21 @@ class MatchyOption(OurBaseModel):
 class ImportPossibleFields(OurBaseModel):
     possible_fields: List[MatchyOption] = []
     
+
+class MatchyCell(OurBaseModel):
+    value: str
+    rowIndex: int
+    colIndex: int
+
+class MatchyUploadEntry(OurBaseModel):
+    lines: List[Dict[str, MatchyCell]]
+
+class MatchyWrongCell(OurBaseModel):
+    message: str
+    rowIndex: int
+    colIndex: int
+
+class ImportResponse(OurBaseModel):
+    errors: str
+    warnings: str
+    wrongCells: list[MatchyWrongCell]
