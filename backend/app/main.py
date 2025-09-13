@@ -1,17 +1,45 @@
 from datetime import datetime
-from fastapi import Depends, FastAPI, HTTPException, status
+from typing import Annotated
+import uuid
+from fastapi import Depends, FastAPI, HTTPException, status, BackgroundTasks
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 import uvicorn
 import re
 from . import schemas, models, enums
 from .database import create_db_and_tables, get_session
 from .routers import employee as crud, mail_service
+from fastapi.middleware.cors import CORSMiddleware
 
 async def lifespan(app: FastAPI):
     create_db_and_tables()
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+@app.get("/items/")
+async def read_items(token: Annotated[str, Depends(oauth2_scheme)]):
+    return {"token": token}
+
+
+
+#fix me:  set specific origins later
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Dependency
 def get_db():
@@ -29,11 +57,9 @@ async def create_user(
     employee: schemas.EmployeeCreate,
     db: Session = Depends(get_db)
 ):
-    db_employee = crud.get_user_by_email(db, employee.email)
     if employee.password != employee.confirm_password:
         raise HTTPException(status_code=400, detail="Passwords do not match")
-    if db_employee:
-        raise HTTPException(status_code=400, detail="Email already registered")
+    
     return await crud.add(db=db, employee=employee) 
 
 @app.patch("/employee", response_model=schemas.BaseOut)
@@ -71,7 +97,6 @@ mandatory_fields = {
     "first_name": "First Name",
     "last_name": "Last Name",
     "email": "Email",
-    "password": "Password",
     "number": "Number",
     "contract_type": "Contract Type",
     "gender": "Gender",
@@ -101,25 +126,26 @@ unique_fields = {
 }
 
 options = [
-    schemas.MatchyOption(mandatory_fields["first_name"], "first_name", True, enums.FieldType.string),
-    schemas.MatchyOption(mandatory_fields["last_name"], "last_name", True, enums.FieldType.string),
-    schemas.MatchyOption(mandatory_fields["email"], "email", True, enums.FieldType.string, [
-        schemas.MatchyCondition(enums.ConditionProperty.regex, enums.Comparer.e, email_regex)
+    schemas.MatchyOption(display_value=mandatory_fields["first_name"], value="first_name", mandatory=True, type=enums.FieldType.string),
+    schemas.MatchyOption(display_value=mandatory_fields["last_name"], value="last_name", mandatory=True, type=enums.FieldType.string),
+    schemas.MatchyOption(display_value=mandatory_fields["email"], value="email", mandatory=True, type=enums.FieldType.string, conditions=[
+        schemas.MatchyCondition(property=enums.ConditionProperty.regex, comparer=enums.Comparer.e, value=email_regex)
     ]),
-    schemas.MatchyOption(mandatory_fields["password"], "password", True, enums.FieldType.string),
-    schemas.MatchyOption(mandatory_fields["number"], "number", True, enums.FieldType.integer),
-    schemas.MatchyOption(optional_fields["birth_date"], "birth_date", False, enums.FieldType.string),
-    schemas.MatchyOption(optional_fields["address"], "address", False, enums.FieldType.string),
-    schemas.MatchyOption(mandatory_with_condition["cnss_number"][0], "cnss_number", False, enums.FieldType.string),
-    schemas.MatchyOption(mandatory_fields["contract_type"], "contract_type", True, enums.FieldType.string, [
-        schemas.MatchyCondition(enums.ConditionProperty.value, enums.Comparer._in, enums.ContractType.getPossibleValues())
+    schemas.MatchyOption(display_value=mandatory_fields["number"], value="number", mandatory=True, type=enums.FieldType.integer),
+    schemas.MatchyOption(display_value=optional_fields["birth_date"], value="birth_date", mandatory=False, type=enums.FieldType.string),
+    schemas.MatchyOption(display_value=optional_fields["address"], value="address", mandatory=False, type=enums.FieldType.string),
+    schemas.MatchyOption(display_value=mandatory_with_condition["cnss_number"][0], value="cnss_number", mandatory=False, type=enums.FieldType.string, conditions=[
+        schemas.MatchyCondition(property=enums.ConditionProperty.regex, comparer=enums.Comparer.e, value=cnss_regex)
     ]),
-    schemas.MatchyOption(mandatory_fields["gender"], "gender", True, enums.FieldType.string, [
-        schemas.MatchyCondition(enums.ConditionProperty.value, enums.Comparer._in, enums.Gender.getPossibleValues())
+    schemas.MatchyOption(display_value=mandatory_fields["contract_type"], value="contract_type", mandatory=True, type=enums.FieldType.string, conditions=[
+        schemas.MatchyCondition(property=enums.ConditionProperty.value, comparer=enums.Comparer._in, value=enums.ContractType.getPossibleValues())
     ]),
-    schemas.MatchyOption(mandatory_fields["roles"], "roles", True, enums.FieldType.string),
-    schemas.MatchyOption(optional_fields["phone_number"], "phone_number", False, enums.FieldType.string, [
-        schemas.MatchyCondition(enums.ConditionProperty.value, enums.Comparer.e, phone_number_regex)
+    schemas.MatchyOption(display_value=mandatory_fields["gender"], value="gender", mandatory=True, type=enums.FieldType.string, conditions=[
+        schemas.MatchyCondition(property=enums.ConditionProperty.value, comparer=enums.Comparer._in, value=enums.Gender.getPossibleValues())
+    ]),
+    schemas.MatchyOption(display_value=mandatory_fields["roles"], value="roles", mandatory=True, type=enums.FieldType.string),
+    schemas.MatchyOption(display_value=optional_fields["phone_number"], value="phone_number", mandatory=False, type=enums.FieldType.string, conditions=[
+        schemas.MatchyCondition(property=enums.ConditionProperty.value, comparer=enums.Comparer.e, value=phone_number_regex)
     ]),
 ]
 
@@ -159,7 +185,7 @@ def are_valid_roles(field: str):
         if enums.RoleType.is_valid_enum_value(role):
             res.append(role)
     return res if len(res) > 0 else None
-
+ 
 
 fields_check = {
     "email": (lambda field: is_valid_email(field), "Wrong email format"),
@@ -193,9 +219,9 @@ def validate_employee_data(employee):
 
         if employee_to_add[field] == '':
             if is_field_mandatory(employee, field):
-                msg = f"{possible_fields[field]} is mandatory"
+                msg = f"{possible_fields[field][0]} is mandatory"
                 errors.append(msg)
-                wrong_cells.append(schemas.MatchyWrongCell(msg, cell.rowIndex, cell.colIndex))
+                wrong_cells.append(schemas.MatchyWrongCell(message=msg, rowIndex=cell.rowIndex, colIndex=cell.colIndex))
             else:
                 employee_to_add[field] = None
         elif field in fields_check:
@@ -203,64 +229,140 @@ def validate_employee_data(employee):
             if converted_val is None:
                 msg = fields_check[field][1]
                 (errors if is_field_mandatory(employee, field) else warnings).append(msg)
-                wrong_cells.append(schemas.MatchyWrongCell(msg, cell.rowIndex, cell.colIndex))
+                wrong_cells.append(schemas.MatchyWrongCell(message=msg, rowIndex=cell.rowIndex, colIndex=cell.colIndex))
             else:
                 employee_to_add[field] = converted_val
     return (errors, warnings, wrong_cells, employee_to_add)
             
+def  valid_employees_data_and_upload(employees: list, force_upload: bool, backgroundTasks: BackgroundTasks, db: Session = Depends(get_db)):
+    try:
+        errors = []
+        warnings = []
+        wrong_cells = []
+        employee_to_add = []
+        roles_per_email = {}
 
-def valid_employees_data_and_upload(employees: list, force_upload: bool, db: Session = Depends(get_db)):
-    errors = []
-    warnings = []
-    wrong_cells = []
-    employee_to_add = []
-
-    for line, employee in enumerate(employees):
-        emp_errors, emp_warnings, emp_wrong_cells, emp = validate_employee_data(employee)
-        if emp_errors:
-            msg = ('\n').join(emp_errors)
-            errors.append(f"\nLine {line + 1}: \n{msg}")
-        if emp_warnings:
-            msg = ('\n').join(emp_warnings)
-            warnings.append(f"\nLine {line + 1}: \n{msg}")
-        if emp_wrong_cells:
-            wrong_cells.extend(emp_wrong_cells)
-        
-        employee_to_add.append(emp)
-   
-    for fields in unique_fields:
-        values = set()
         for line, employee in enumerate(employees):
-            cell = employee.get(fields)
-            val = cell.value.strip()
-            if val == '':
-                continue
+            emp_errors, emp_warnings, emp_wrong_cells, emp = validate_employee_data(employee)
+            if emp_errors:
+                msg = ('\n').join(emp_errors)
+                errors.append(f"\nLine {line + 1}: \n{msg}")
+            if emp_warnings:
+                msg = ('\n').join(emp_warnings)
+                warnings.append(f"\nLine {line + 1}: \n{msg}")
+            if emp_wrong_cells:
+                wrong_cells.extend(emp_wrong_cells)
+            
+            roles_per_email[emp.get('email')] = emp.pop('employee_roles')
+            employee_to_add.append(models.Employee(**emp))
+    
+        for field in unique_fields:
+            values = set()
+            for line, employee in enumerate(employees):
+                cell = employee.get(field)
+                val = cell.value.strip()
+                if val == '':
+                    continue
 
-            if val in values:
-                msg = f"{possible_fields[fields]} must be unique."
-                
-                wrong_cells.append(schemas.MatchyWrongCell(msg, cell.rowIndex, cell.colIndex))
+                if val in values:
+                    msg = f"{possible_fields[field]} must be unique."
+                    
+                    wrong_cells.append(schemas.MatchyWrongCell(message=msg, rowIndex=cell.rowIndex, colIndex=cell.colIndex))
 
-            else:
-                values.add(val)
+                else:
+                    values.add(val)
 
-            stmt = select(models.Employee).where(unique_fields[fields].in_(values))
+            stmt = select(models.Employee).where(unique_fields[field].in_(values))
             duplicated_vals = db.exec(stmt).all()
+            duplicated_vals = {[str(val[0]) for val in duplicated_vals]}
             if duplicated_vals:
-                msg = f"{possible_fields[fields]} must be unique. {(', ').join(duplicated_vals)} already exists in the database."
-                (errors if is_field_mandatory(employee, fields) else warnings).append(msg)
-                wrong_cells.append(schemas.MatchyWrongCell(msg, cell.rowIndex, cell.colIndex))
-    
-     
-    if errors or (warnings and not force_upload):
-        return schemas.ImportResponse(
-            errors=('\n').join(errors),
-            warnings=('\n').join(warnings),
-            wrongCells=wrong_cells
-        )
-    
+                msg = f"{possible_fields[field]} must be unique. {(', ').join(duplicated_vals)} already exists in the database."
+                (errors if is_field_mandatory(employee, field) else warnings).append(msg)
+                for employee in employees:
+                    cell = employee.get(field)
+                    val = cell.value.strip()
 
+                    if val in duplicated_vals:
+                        wrong_cells.append(schemas.MatchyWrongCell(message=f"{possible_fields[field]} must be unique. {val} already exists in the database.", rowIndex=cell.rowIndex, colIndex=cell.colIndex))
+        
+        
+        if errors or (warnings and not force_upload):
+            return schemas.ImportResponse(
+                detail="File has some errors",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                errors=('\n').join(errors),
+                warnings=('\n').join(warnings),
+                wrong_cells=wrong_cells
+            )
+        
+        db.add_all(employee_to_add)
+        db.flush()
 
+        # case 1: lost order
+        employee_roles = []
+        for emp in employee_to_add:
+            for role in roles_per_email[emp.email]:
+                employee_roles.append(models.EmployeeRole(employee_id=emp.id, role=role))
+
+        db.add_all(employee_roles)
+        db.flush()
+
+        activation_codes_to_add = []
+        email_data = []
+        for emp in employee_to_add:
+            token = uuid.uuid1()
+            activation_code = models.AccountActivation(
+                employee_id=emp.id, 
+                email=emp.email, 
+                status=enums.TokenStatus.Pending, 
+                token=token
+            )
+            activation_codes_to_add.append(activation_code)
+            email_data.append(([emp.email], {
+                "name": emp.first_name,
+                "code": token,
+                "psw": emp.password,
+            }))
+
+        db.add_all(activation_codes_to_add)
+
+        for email_datum in email_data:
+            backgroundTasks.add_task(mail_service.simple_send, email_datum[0], email_datum[1])
+        
+        db.commit()
+
+    except Exception as e:
+        db.rollback() 
+        text = str(e)
+        add_error(text, db)
+
+        raise HTTPException(status_code=500, detail=get_error_message(text))
+
+    return schemas.ImportResponse(
+        detail="File imported successfully",
+        status_code=status.HTTP_201_CREATED
+    )
+
+def add_error(text, db: Session):
+    try:
+        db.add(models.Error(text=text))
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Something went wrong")
+
+error_keys = {
+    "employee_roles_employee_id_fkey": "Employee does not exist",
+    "employee_roles_pkey": "No Employee has this role",
+    "ck_employees_valid_cnss_number": "CNSS number must be {8 digits}-{2 digits} and its mandatory for Cdi and Cdd",
+    "employees_email_key": "Employee with this email already exists",
+    "employees_pkey": "Employee with this id doesn't exist",
+}
+
+def get_error_message(error_message):
+    for error_key in error_keys:
+        if error_key in error_message:
+            return error_keys[error_key]
+    return "Something went wrong"
 
 
 @app.post("employee/import")
@@ -273,8 +375,8 @@ def getPossibleFields(db: Session = Depends(get_db)):
         possible_fields=options,
     )
 
-@app.post('employees/csv')
-def upload(entry: schemas.MatchyUploadEntry, db: Session = Depends(get_db)):
+@app.post('/employees/test ')
+async def upload(entry: schemas.MatchyUploadEntry, backgroundTasks: BackgroundTasks ,db: Session = Depends(get_db)):
     employees = entry.lines
     if not employees:
         raise HTTPException(status_code=400, detail="No employees to import")
@@ -283,8 +385,10 @@ def upload(entry: schemas.MatchyUploadEntry, db: Session = Depends(get_db)):
     if missing_mandatory_fields:
         raise HTTPException(
             status_code=400, 
-            detail=f"Missing mandatory fields: {', '.join([display for field, display in missing_mandatory_fields.items()])}"
+            detail=f"Missing mandatory fields: {', '.join([mandatory_fields[field] for field in missing_mandatory_fields])}"
         ) 
+    
+    return valid_employees_data_and_upload(employees, backgroundTasks, entry.forceUpload, db)
 
 if __name__ == "__main__":
     uvicorn.run("backend.app.main:app", host="127.0.0.1", port=8000, reload=True)

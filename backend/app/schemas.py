@@ -1,15 +1,19 @@
 from datetime import datetime, date
+from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict
-from sqlmodel import SQLModel
 
 from backend.app.enums.matchyComparer import Comparer
 from .enums import ContractType, Gender, RoleType, ConditionProperty, FieldType
 from datetime import datetime
 
 
-class OurBaseModel(SQLModel):
+class OurBaseModel(BaseModel):
     class Config:
         from_attributes = True
+
+class BaseOut(OurBaseModel):
+    detail: str 
+    status_code: int
 
 class EmployeeBase(OurBaseModel):
     first_name: str
@@ -36,16 +40,11 @@ class EmployeeOut(EmployeeBase):
 class ConfirmAccount(OurBaseModel):
     confirmation_code: str
 
-class BaseOut(OurBaseModel):
-    detail: str 
-    status_code: int
-
 class MatchyCondition(OurBaseModel):
     property: ConditionProperty
     comparer: Optional[Comparer] = None
-    value: int | float | str | List[int]
+    value: int | float | str | List[str]
     custom_fail_message: Optional[str] = None
-
 
 class MatchyOption(OurBaseModel):
     display_value: str
@@ -66,13 +65,14 @@ class MatchyCell(OurBaseModel):
 
 class MatchyUploadEntry(OurBaseModel):
     lines: List[Dict[str, MatchyCell]]
+    forceUpload: Optional[bool] = False
 
 class MatchyWrongCell(OurBaseModel):
     message: str
     rowIndex: int
     colIndex: int
 
-class ImportResponse(OurBaseModel):
-    errors: str
-    warnings: str
-    wrongCells: list[MatchyWrongCell]
+class ImportResponse(BaseOut):
+    errors: Optional[str] = None
+    warnings: Optional[str] = None
+    wrong_cells: Optional[list[MatchyWrongCell]] = [] 

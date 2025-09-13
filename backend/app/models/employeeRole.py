@@ -1,6 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship
 from .employee import Employee
-from sqlalchemy import ForeignKey
 from ..enums import RoleType
 
 

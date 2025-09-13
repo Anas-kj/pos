@@ -1,4 +1,5 @@
 import uuid
+from fastapi import HTTPException
 from sqlmodel import Session, select
 from .. import models, schemas, enums
 from ..routers.mail_service import simple_send
@@ -13,15 +14,32 @@ def get_user(db: Session, id: int):
     employee = db.exec(stmt).first()
     return employee
 
-def get_user_by_email(db: Session, email: str):
-    stmt = select(models.Employee).where(models.Employee.email == email)
-    employee = db.exec(stmt).first()
-    return employee
-
 def get_all (db: Session, skip: int = 0, limit: int = 10):
     stmt = select(models.Employee).offset(skip).limit(limit)
     employees = db.exec(stmt).all()
     return employees
+
+error_keys = {
+    "employee_roles_employee_id_fkey": "Employee does not exist",
+    "employee_roles_pkey": "No Employee has this role",
+    "ck_employees_valid_cnss_number": "CNSS number must be {8 digits}-{2 digits} and its mandatory for Cdi and Cdd",
+    "employees_email_key": "Employee with this email already exists",
+    "employees_pkey": "Employee with this id doesn't exist",
+}
+
+def get_error_message(error_message):
+    for error_key in error_keys:
+        if error_key in error_message:
+            return error_keys[error_key]
+    return "Something went wrong"
+
+def add_error(text, db: Session):
+    try:
+        db.add(models.Error(text=text))
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Something went wrong")
+    
 
 async def add(db: Session, employee: schemas.EmployeeCreate):
     try:
@@ -62,7 +80,11 @@ async def add(db: Session, employee: schemas.EmployeeCreate):
 
 
     except Exception as e:
-        print(e)
+        db.rollback()
+        text = str(e)
+        add_error(text, db)
+
+        raise HTTPException(status_code=500, detail=get_error_message(text))
     
 
     return schemas.EmployeeOut(**db_employee.__dict__, roles=roles)
