@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     mail_from: str
     mail_server: str
     mail_port: int
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
     model_config = SettingsConfigDict(env_file="backend/.env")
 
 

@@ -16,5 +16,3 @@ def get_session():
         yield session
     finally:
         session.close()
-
-SessionDep = Annotated[Session, Depends(get_session)]

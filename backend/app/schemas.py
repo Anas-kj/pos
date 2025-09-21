@@ -40,6 +40,14 @@ class EmployeeOut(EmployeeBase):
 class ConfirmAccount(OurBaseModel):
     confirmation_code: str
 
+class ForgetPassword(OurBaseModel):
+    email: EmailStr
+
+class ResetPassword(OurBaseModel):
+    reset_code: str
+    psw: str
+    confirm_psw: str
+
 class MatchyCondition(OurBaseModel):
     property: ConditionProperty
     comparer: Optional[Comparer] = None
@@ -76,3 +84,11 @@ class ImportResponse(BaseOut):
     errors: Optional[str] = None
     warnings: Optional[str] = None
     wrong_cells: Optional[list[MatchyWrongCell]] = [] 
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    email: str | None = None
+
