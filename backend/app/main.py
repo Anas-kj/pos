@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import uvicorn
 
 from backend.app.OAuth2 import get_curr_employee
+from backend.app.routers import auth
 
 from .external_services import email_service
 
@@ -12,7 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-app.include_router(employee.router)
+app.include_router(employee.app)
+app.include_router(auth.app)
 
 
 #fix me:  set specific origins later
@@ -31,16 +33,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dependency
-def get_db():
-    yield from get_session()
-
 @app.get("/")
 async def root():
-    return await email_service.simple_send(["tisoha2149@litepax.com"], {
-        "first_name" : "Fred",
-        "last_name" : "Flintstone",
-    })
+    pass
 
 if __name__ == "__main__":
     uvicorn.run("backend.app.main:app", host="127.0.0.1", port=8000, reload=True)

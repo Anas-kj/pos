@@ -1,7 +1,8 @@
 from sqlalchemy import CheckConstraint
-from sqlmodel import SQLModel, Field
+from sqlmodel import Relationship, SQLModel, Field
 from ..enums import ContractType, Gender, AccountStatus
 from datetime import datetime, UTC
+from .employeeRole import EmployeeRole
 
 
 class Employee(SQLModel, table=True): 
@@ -21,6 +22,8 @@ class Employee(SQLModel, table=True):
     account_status: AccountStatus = Field(default=AccountStatus.inactive)
     phone_number : str = Field(default=None, index=True)
     created_at: datetime = Field(default=datetime.now(UTC), index=True)
+
+    roles: list[EmployeeRole] = Relationship()
 
     __table_args__ = (
         CheckConstraint(

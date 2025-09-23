@@ -20,12 +20,12 @@ conf = ConnectionConfig(
     MAIL_SSL_TLS = True,
     USE_CREDENTIALS = True,
     VALIDATE_CERTS = True, 
-    TEMPLATE_FOLDER = Path(__file__).parent / "../templates",
+    TEMPLATE_FOLDER = Path(__file__).parent / "templates",
 )
 
 template_name_per_template = {
     EmailTemplate.ConfirmAccount: "account_activation.html",
-    EmailTemplate.ResetPassword: "reset_password.html",
+    EmailTemplate.ResetPassword: "reset_password_mail.html",
 }
 
 async def simple_send(email: list[EmailStr], body: dict, template: EmailTemplate):

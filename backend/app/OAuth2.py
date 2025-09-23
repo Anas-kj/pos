@@ -4,8 +4,7 @@ from passlib.context import CryptContext
 import jwt
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy import select
-
-from app.schemas import TokenData
+from .schemas import TokenData
 from backend.app import models
 from .config import settings
 
@@ -34,7 +33,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 def get_employee(db, email):
     stmt = select(models.Employee).where(models.Employee.email == email)
     emp = db.exec(stmt).first() 
-    return emp
+    return emp[0]
 
 def get_curr_employee(db, token):
     credentials_exception = HTTPException(
@@ -59,7 +58,7 @@ def authenticate_employee(db, email: str, password: str):
     employee = get_employee(db, email)
     if not employee:
         return False
-    if not verify_password(password, employee.hashed_password):
+    if not verify_password(password, employee.password):
         return False
     return employee
 

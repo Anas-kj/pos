@@ -1,11 +1,13 @@
-import uuid
 from fastapi import HTTPException
+from sqlalchemy import func, update
 from sqlmodel import Session, select
 
+from backend.app import enums
 from backend.app.OAuth2 import get_password_hash
+from backend.app.crud.auth import add_confirmation_code
+from backend.app.dependencies import PaginationParams
 from backend.app.enums.emailTemplate import EmailTemplate
-from .error import add_error, get_error_message
-from .. import models, schemas, enums
+from .. import models, schemas
 from ..external_services.email_service import simple_send
 
 
@@ -17,53 +19,6 @@ error_keys = {
     "employees_email_key": "Employee with this email already exists",
     "employees_pkey": "Employee with this id doesn't exist",
 }
-
-# confirm account
-def get_confirmation_code(db: Session, code: str):
-    stmt = select(models.AccountActivation).where(models.AccountActivation.token == code)
-    act = db.exec(stmt).first() 
-    return act
-
-def add_confirmation_code(db: Session, db_employee: models.Employee):
-    activation_code = models.AccountActivation(
-            employee_id=db_employee.id, 
-            email=db_employee.email, 
-            status=enums.TokenStatus.Pending, 
-            token=uuid.uuid1()
-        )
-    db.add(activation_code)
-
-    return activation_code
-
-# video 1h min 34:45c    
-def edit_confirmation_code(db: Session, id: int, new_data: dict):
-    db_token = db.get(models.AccountActivation, id)
-    db_token.status = enums.TokenStatus.Used
-    db.commit()
-    return db_token
-
-#reset pwd code 
-def get_reset_code(db: Session, code: str):
-    stmt = select(models.ResetPassword).where(models.ResetPassword.token == code)
-    reset_code = db.exec(stmt).first() 
-    return reset_code
-
-def add_reset_code(db: Session, db_employee: models.Employee):
-    reset_code = models.ResetPassword(
-            employee_id=db_employee.id, 
-            email=db_employee.email, 
-            status=enums.TokenStatus.Pending, 
-            token=uuid.uuid1()
-        )
-    db.add(reset_code)
-
-    return reset_code
-
-def edit_reset_code(db: Session, id: int, new_data: dict):
-    db_token = db.get(models.ResetPassword, id)
-    db_token.status = enums.TokenStatus.Used
-    return db_token
-
 
 #to refactor later !!!
 def get_employee(db: Session, id: int):
@@ -94,42 +49,97 @@ def get_employees(db: Session, skip: int = 0, limit: int = 10):
     employees = db.exec(stmt).all()
     return employees
 
-async def add(db: Session, employee: schemas.EmployeeCreate):
-    try:
-        #fix me later
-        employee.password = get_password_hash(employee.password)
-        employee_data = employee.model_dump()
-        employee_data.pop('confirm_password', None)
-        roles = employee_data.pop('roles', None)
 
-        # add employee to the database
-        db_employee = models.Employee(**employee_data) 
-        db.add(db_employee)
-        db.flush()
-        db.refresh(db_employee)
-      
-        # add roles to the employee
-        db.add_all([models.EmployeeRole(employee_id=db_employee.id, role=role) for role in roles])
+def div_ceil(nominator, denominator):
+    full_pages = nominator // denominator
+    additional_page = 1 if nominator % denominator > 0 else 0
+    return full_pages + additional_page
 
-        # add confirmation code 
-        activation_code = add_confirmation_code(db, db_employee)
+def get_all_emp(db: Session, pagination_param: PaginationParams, name_substr):
+    query = select(models.Employee)
+    
+    if name_substr:
+        query = query.where(func.lower(func.concat(models.Employee.first_name, ' ', models.Employee.last_name)).contains(func.lower(name_substr)))
+
+    total_records = db.scalar(select(func.count()).select_from(query.subquery()))
+    total_pages = div_ceil(total_records, pagination_param.page_size)
+    stmt = (
+        query
+        .limit(pagination_param.page_size)
+        .offset((pagination_param.page_number - 1) * pagination_param.page_size)
+    )
+    employees = db.scalars(stmt).all()
+    return (employees, total_records, total_pages)
 
 
-        # send confirmation email
-        await simple_send([db_employee.email], {
-                'name': db_employee.first_name,
+
+async def add_employee(db: Session, employee: schemas.EmployeeCreate):
+ 
+    #fix me later
+    employee.password = get_password_hash(employee.password)
+    employee_data = employee.model_dump()
+    employee_data.pop('confirm_password', None)
+    roles = employee_data.pop('roles', None)
+    # add employee to the database
+    db_employee = models.Employee(**employee_data) 
+    db.add(db_employee)
+    db.flush()
+    db.refresh(db_employee)
+    
+    # add roles to the employee
+    db.add_all([models.EmployeeRole(employee_id=db_employee.id, role=role) for role in roles])
+    # add confirmation code 
+    activation_code = add_confirmation_code(db, db_employee.id, db_employee.email)
+    # send confirmation email
+    await simple_send([db_employee.email], {
+            'name': db_employee.first_name,
+            'code': activation_code.token,
+            'psw': employee.password
+        }, EmailTemplate.ConfirmAccount
+    )
+    db.commit()
+    return db_employee
+
+
+async def edit_employee_password(db: Session, id: int, entry: schemas.EmployeeEdit):
+    employee = db.get(models.Employee, id)
+    
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found") 
+    
+    fields_to_update = entry.model_dump()
+    for field in ['password', 'email', 'confirm_password', 'actual_password', 'roles']:
+        fields_to_update.pop(field)
+    
+    if employee.email != entry.email:
+        if not entry.actual_password or get_password_hash(entry.actual_password) != employee.password:
+            raise HTTPException(status_code=400, detail="Actual password is incorrect")
+        
+        fields_to_update[models.Employee.email] = entry.email
+        fields_to_update[models.Employee.account_status] = enums.AccountStatus.inactive
+
+    if entry.password and get_password_hash(entry.password) != employee.password:
+        if entry.password != entry.confirm_password:
+            raise HTTPException(status_code=400, detail="Passwords do not match")
+        
+        if not entry.actual_password or get_password_hash(entry.actual_password) != employee.password:
+            raise HTTPException(status_code=400, detail="Actual password is incorrect")
+        
+        fields_to_update[models.Employee.password] = get_password_hash(entry.password)
+        
+    db.exec(
+            update(models.Employee)
+            .where(models.Employee.id == id)
+            .values(**fields_to_update)
+            .execution_options(synchronize_session=False)
+        )
+    
+    if models.Employee.email in fields_to_update:
+        activation_code = add_confirmation_code(db, employee.id, fields_to_update[models.Employee.email])
+        await simple_send([employee.email], {
+                'name': employee.first_name,
                 'code': activation_code.token,
-                'psw': employee.password
             }, EmailTemplate.ConfirmAccount
         )
-        db.commit()
 
-
-    except Exception as e:
-        db.rollback()
-        text = str(e)
-        add_error(text, db)
-        raise HTTPException(status_code=500, detail=get_error_message(text))
-    
-    return schemas.EmployeeOut(**db_employee.__dict__, roles=roles)
-
+    db.commit()    

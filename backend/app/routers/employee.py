@@ -1,9 +1,16 @@
-from fastapi import APIRouter, HTTPException, status, BackgroundTasks
+from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from sqlalchemy import func, update
 from sqlmodel import Session, select
+
+from backend.app import crud
+from backend.app.OAuth2 import get_curr_employee
+from backend.app.crud.employee import add_employee, get_all_emp
+from backend.app.database import get_session
 
 from .. import schemas, models, enums
 from ..external_services import email_service
-from ..dependencies import DbDep
+from ..dependencies import DbDep, paginationParams, currentEmployee
 
 import datetime
 import uuid
@@ -15,19 +22,58 @@ app = APIRouter(
 )
 
 @app.post("/", response_model=schemas.EmployeeOut)
-async def create_user(
-    employee: schemas.EmployeeCreate,
-    db: DbDep
-):
-    if employee.password != employee.confirm_password:
-        raise HTTPException(status_code=400, detail="Passwords do not match")
-    
-    return await employee.add(db=db, employee=employee) 
+async def add(employee: schemas.EmployeeCreate, db: DbDep, current_employee: currentEmployee):
+    try:
+        db_employee = await add_employee(db=db, employee=employee)
+    except Exception as e:
+        db.rollback()
+        text = str(e)
+        add_error(text, db)
+        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys)(text))
 
-#edit ne9sa
-@app.get("/")
-def get_all(db: DbDep):
-    pass
+    return schemas.EmployeeOut(**db_employee.__dict__)
+    
+
+@app.put("/{id}", response_model=schemas.BaseOut)
+async def edit_employee(id: int, entry: schemas.EmployeeEdit, db: DbDep):
+    try:
+        stmt = (
+            update(models.Employee)
+            .where(models.Employee.id == id)
+            .values(**entry.model_dump())
+            .execution_options(synchronize_session=False)
+        )
+        await db.exec(stmt)
+    except Exception as e:
+        db.rollback()
+        text = str(e)
+        add_error(text, db)
+        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys)(text))
+    
+    return schemas.BaseOut(
+        detail="Employee updated successfully", 
+        status_code=status.HTTP_200_OK
+    )
+
+
+
+@app.get("/all", response_model=schemas.EmployeesOut)
+def get_all(db: DbDep, pagination_param: paginationParams, name_substr: str = None):
+    try:
+        employees, total_records, total_pages = get_all_emp(db, pagination_param, name_substr)
+    except Exception as e:
+        text = str(e)
+        add_error(text, db)
+        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys)(text))
+    return schemas.EmployeesOut(
+        detail="Employees retrieved successfully",
+        status_code=status.HTTP_200_OK,
+        page_number=pagination_param.page_number,
+        page_size=pagination_param.page_size,
+        total_pages=total_pages,
+        total_records=total_records,
+        list=[schemas.EmployeeOut(**employee.__dict__) for employee in employees]
+    )
 
 email_regex =  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 cnss_regex = r'^\d{8}-\d{2}$'
@@ -276,7 +322,7 @@ def  valid_employees_data_and_upload(employees: list, force_upload: bool, backgr
         text = str(e)
         add_error(text, db)
 
-        raise HTTPException(status_code=500, detail=get_error_message(text))
+        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys)(text))
 
     return schemas.ImportResponse(
         detail="File imported successfully",
