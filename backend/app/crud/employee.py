@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy import func, update
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from backend.app import enums
@@ -56,7 +57,7 @@ def div_ceil(nominator, denominator):
     return full_pages + additional_page
 
 def get_all_emp(db: Session, pagination_param: PaginationParams, name_substr):
-    query = select(models.Employee)
+    query = select(models.Employee).options(selectinload(models.Employee.roles))
     
     if name_substr:
         query = query.where(func.lower(func.concat(models.Employee.first_name, ' ', models.Employee.last_name)).contains(func.lower(name_substr)))

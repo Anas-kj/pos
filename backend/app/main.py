@@ -4,8 +4,6 @@ import uvicorn
 from backend.app.OAuth2 import get_curr_employee
 from backend.app.routers import auth
 
-from .external_services import email_service
-
 from .database import get_session
 from .routers import employee
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +20,7 @@ origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
     "http://localhost",
-    "http://localhost:8080",
+    "http://localhost:4200",
 ]
 
 app.add_middleware(

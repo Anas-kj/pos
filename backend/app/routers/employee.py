@@ -56,7 +56,7 @@ async def edit_employee(id: int, entry: schemas.EmployeeEdit, db: DbDep):
     )
 
 
-
+# Having getting roles problem
 @app.get("/all", response_model=schemas.EmployeesOut)
 def get_all(db: DbDep, pagination_param: paginationParams, name_substr: str = None):
     try:
