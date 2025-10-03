@@ -1,141 +1,73 @@
+<form [formGroup]="employeeFilterForm" class="p-inputgroup">
+    <span class="p-inputgroup-addon">
+        <i class="pi pi-user"></i>
+    </span>
+    <input id="name_substr" type="text" pInputText formControlName="name_substr" placeholder="Employee Name">
+  
+</form>
 
-<p-table
-    #dt1
-    [value]="employees "
-    dataKey="id"
-    [rows]="10"
-    [showCurrentPageReport]="true"
-    [rowsPerPageOptions]="[10, 25, 50]"
-    [loading]="loading"
-    [paginator]="true"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-    [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
->
-    <!-- <ng-template pTemplate="caption">
-        <div class="flex">
-            <button pButton label="Clear" class="p-button-outlined" icon="pi pi-filter-slash" (click)="clear(dt1)"></button>
-            <span class="p-input-icon-left ml-auto">
-                <i class="pi pi-search"></i>
-                <input pInputText type="text" (input)="dt1.filterGlobal($event.target.value, 'contains')" placeholder="Search keyword" />
-            </span>
-        </div>
-    </ng-template> -->
-    <ng-template pTemplate="header">
-        <tr>
-            <th style="min-width:15rem">
-                <div class="flex align-items-center">
-                    Number
-                    <p-columnFilter type="text" field="number" display="menu"></p-columnFilter>
-                </div>
-            </th>
-            <th style="min-width:15rem">
-                <div class="flex align-items-center">
-                    Name
-                    <p-columnFilter type="text" field="name" display="menu"></p-columnFilter>
-                </div>
-            </th>
-            <th style="min-width:15rem">
-                <div class="flex align-items-center">
-                    Gender
-                    <p-columnFilter type="text" field="gender" display="menu"></p-columnFilter>
-                </div>
-            </th>
-            <th style="min-width:15rem">
-                <div class="flex align-items-center">
-                    Phone Number
-                    <p-columnFilter type="text" field="phone_number" display="menu"></p-columnFilter>
-                </div>
-            </th>
-            <!-- <th style="min-width:10rem">
-                <div class="flex align-items-center">
-                    Date
-                    <p-columnFilter type="date" field="date" display="menu"></p-columnFilter>
-                </div>
-            </th>
-            <th style="min-width:10rem">
-                <div class="flex align-items-center">
-                    Balance
-                    <p-columnFilter type="numeric" field="balance" display="menu" currency="USD"></p-columnFilter>
-                </div>
-            </th>
-            <th style="min-width:10rem">
-                <div class="flex align-items-center">
-                    Status
-                    <p-columnFilter field="status" matchMode="equals" display="menu">
-                        <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                            <p-dropdown [ngModel]="value" [options]="statuses" (onChange)="filter($event.value)" placeholder="Any">
-                                <ng-template let-option pTemplate="item">
-                                    <p-tag [value]="option.value" [severity]="getSeverity(option.label)"></p-tag>
-                                </ng-template>
-                            </p-dropdown>
-                        </ng-template>
-                    </p-columnFilter>
-                </div>
-            </th>
-            <th style="min-width:10rem">
-                <div class="flex align-items-center">
-                    Activity
-                    <p-columnFilter field="activity" matchMode="between" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
-                        <ng-template pTemplate="filter" let-filter="filterCallback">
-                            <p-slider [ngModel]="activityValues" [range]="true" (onSlideEnd)="filter($event.values)" styleClass="m-3"></p-slider>
-                            <div class="flex align-items-center px-2">
-                                <span>{{ activityValues[0] }}</span>
-                                <span>{{ activityValues[1] }}</span>
-                            </div>
-                        </ng-template>
-                    </p-columnFilter>
-                </div>
-            </th>
-            <th style="width: 3rem">
-                <div class="flex align-items-center">
-                    Verified
-                    <p-columnFilter type="boolean" field="verified" display="menu"></p-columnFilter>
-                </div>
-            </th> -->
-        </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-customer>
-        <tr>
-            <td>
-                {{ customer.number }}
-            </td>
-            <td>
-                {{ customer.name }}
-            </td>
-            <td>
-                {{ customer.gender }}
-            </td>
-            <td>
-                {{ customer.phone_number }}
-            </td>
-            <!-- <td>
-                <img src="https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png" [class]="'flag flag-' + customer.country.code" style="width: 20px" />
-                <span class="ml-1 vertical-align-middle">{{ customer.country.name }}</span>
-            </td>
-            <td>
-                <img [alt]="customer.representative.name" src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ customer.representative.image }}" width="32" style="vertical-align: middle" />
-                <span class="ml-1 vertical-align-middle">{{ customer.representative.name }}</span>
-            </td>
-            <td>
-                {{ customer.date | date: 'MM/dd/yyyy' }}
-            </td>
-            <td>
-                {{ customer.balance | currency: 'USD':'symbol' }}
-            </td>
-            <td>
-                <p-tag [value]="customer.status" [severity]="getSeverity(customer.status)"></p-tag>
-            </td>
-            <td>
-                <p-progressBar [value]="customer.activity" [showValue]="false"></p-progressBar>
-            </td>
-            <td class="text-center">
-                <i class="pi" [ngClass]="{ 'text-green-500 pi-check-circle': customer.verified, 'text-red-500 pi-times-circle': !customer.verified }"></i>
-            </td> -->
-        </tr>
-    </ng-template>
-    <ng-template pTemplate="emptymessage">
-        <tr>
-            <td colspan="7">No Employees found.</td>
-        </tr>
-    </ng-template>
-</p-table>
+<p-button (click)="openAddEmployeeDialogue()" label="Add Employee" icon="pi pi-plus-circle"></p-button>
+<p-button (click)="openImportEmployeesDialogue()" label="Import Employees" icon="pi pi-file-import"></p-button>
+
+<div class="card">
+    <p-table
+        #dt1
+        [value]="employees"
+        dataKey="id"
+        [totalRecords]="totalRecords"
+        [rows]="10"
+        [showCurrentPageReport]="true"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [loading]="loading"
+        [paginator]="true"
+        [lazy]="true"
+        (onPage)="onPageChanged($event)"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    > 
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="min-width:15rem">
+                    <div class="flex align-items-center">
+                        Number
+                    </div>
+                </th>
+                <th style="min-width:15rem">
+                    <div class="flex align-items-center">
+                        Name
+                    </div>
+                </th>
+                <th style="min-width:15rem">
+                    <div class="flex align-items-center">
+                        Gender
+                    </div>
+                </th>
+                <th style="min-width:15rem">
+                    <div class="flex align-items-center">
+                        Phone Number
+                    </div>
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-employee>
+            <tr>
+                <td>
+                    {{ employee.number }}
+                </td>
+                <td>
+                    {{ employee.first_name + ' ' + employee.last_name }}
+                </td>
+                <td>
+                    {{ employee.gender }}
+                </td>
+                <td>
+                    {{ employee.phone_number }}
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="7">No Employees found.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

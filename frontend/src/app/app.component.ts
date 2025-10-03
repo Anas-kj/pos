@@ -10,7 +10,7 @@ import { PrimeNGConfig, MenuItem } from 'primeng/api';
 export class AppComponent implements OnInit {
 
   menuBarItems: MenuItem[] | undefined;
-  sidebarVisible = true;
+  sidebarVisible = false;
   menuItems: MenuItem[] | undefined;
 
   constructor(private primengConfig: PrimeNGConfig) {}

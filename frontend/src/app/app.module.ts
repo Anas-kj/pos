@@ -12,8 +12,12 @@ import { MenubarModule } from 'primeng/menubar';
 import { SidebarModule } from 'primeng/sidebar';
 import { MenuModule } from 'primeng/menu';
 import { TableModule } from 'primeng/table';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component'; 
 import { HttpClientModule } from '@angular/common/http';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -27,13 +31,17 @@ import { HttpClientModule } from '@angular/common/http';
   ],
   imports: [
     HttpClientModule,
+    ReactiveFormsModule, 
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     SidebarModule,
     MenubarModule,
     MenuModule,
-    TableModule
+    TableModule,
+    InputTextModule,
+    ButtonModule,
+    DynamicDialogModule
   ],
   providers: [],
   bootstrap: [AppComponent]
