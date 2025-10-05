@@ -66,7 +66,13 @@ export class EmployeesComponent implements OnInit{
 
 
   openAddEmployeeDialogue() {
-    this.ref = this.dialogService.open(AddEmployeeComponent, {});
+    this.ref = this.dialogService.open(AddEmployeeComponent, {
+      width: '70%',
+      height: '70%',
+      contentStyle: { overflow: 'auto' },
+      baseZIndex: 10000,
+      maximizable: true
+    });
     this.ref.onClose.subscribe((data: any) => {
       this.loadEmployees();
     });

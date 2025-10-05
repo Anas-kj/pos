@@ -15,6 +15,11 @@ import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { CalendarModule } from 'primeng/calendar';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { DividerModule } from 'primeng/divider';
+import { PasswordModule } from 'primeng/password';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component'; 
 import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -41,7 +46,12 @@ import { ReactiveFormsModule } from '@angular/forms';
     TableModule,
     InputTextModule,
     ButtonModule,
-    DynamicDialogModule
+    DynamicDialogModule,
+    InputNumberModule,
+    CalendarModule,
+    SelectButtonModule,
+    PasswordModule,
+    DividerModule
   ],
   providers: [],
   bootstrap: [AppComponent]
