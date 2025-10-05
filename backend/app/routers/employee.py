@@ -21,15 +21,23 @@ app = APIRouter(
     tags=["Employee"],
 )
 
+error_keys = {
+    "employee_roles_employee_id_fkey": "Employee does not exist",
+    "employee_roles_pkey": "No Employee has this role",
+    "ck_employees_valid_cnss_number": "CNSS number must be {8 digits}-{2 digits} and its mandatory for Cdi and Cdd",
+    "employees_email_key": "Employee with this email already exists",
+    "employees_pkey": "Employee with this id doesn't exist",
+}
+
 @app.post("/", response_model=schemas.EmployeeOut)
-async def add(employee: schemas.EmployeeCreate, db: DbDep, current_employee: currentEmployee):
+async def add(employee: schemas.EmployeeCreate, db: DbDep): #, current_employee: currentEmployee):
     try:
         db_employee = await add_employee(db=db, employee=employee)
     except Exception as e:
         db.rollback()
         text = str(e)
         add_error(text, db)
-        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys)(text))
+        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys))
 
     return schemas.EmployeeOut(**db_employee.__dict__)
     
@@ -336,15 +344,7 @@ def add_error(text, db: Session):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Something went wrong")
 
-error_keys = {
-    "employee_roles_employee_id_fkey": "Employee does not exist",
-    "employee_roles_pkey": "No Employee has this role",
-    "ck_employees_valid_cnss_number": "CNSS number must be {8 digits}-{2 digits} and its mandatory for Cdi and Cdd",
-    "employees_email_key": "Employee with this email already exists",
-    "employees_pkey": "Employee with this id doesn't exist",
-}
-
-def get_error_message(error_message):
+def get_error_message(error_message, error_keys):
     for error_key in error_keys:
         if error_key in error_message:
             return error_keys[error_key]
@@ -361,7 +361,7 @@ def getPossibleFields(db: DbDep):
         possible_fields=options,
     )
 
-@app.post('/test ')
+@app.post('/test')
 async def upload(entry: schemas.MatchyUploadEntry, backgroundTasks: BackgroundTasks ,db: DbDep):
     employees = entry.lines
     if not employees:

@@ -30,7 +30,7 @@ class EmployeeBase(OurBaseModel):
     birth_date: date | None = None
     address: str | None = None
     cnss_number: str | None = None
-    contract_type: ContractType
+    contract_type: ContractType | None = None
     gender : Gender 
     roles: List[RoleType]
     phone_number : str | None = None
