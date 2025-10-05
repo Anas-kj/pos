@@ -5,6 +5,7 @@ import { Gender, genders } from 'src/models/interfaces/enums/gender';
 import { Validators } from '@angular/forms';
 import { ContractType, contract_types } from 'src/models/interfaces/enums/contractType';
 import { roles } from 'src/models/interfaces/enums/role';
+import { EmployeeCreate } from 'src/models/interfaces/employeeCreate';
 
 @Component({
   selector: 'app-add-employee',
@@ -19,10 +20,10 @@ export class AddEmployeeComponent {
     number: [null, [Validators.required, Validators.min(1)]],
     birth_date: [null],
     address: [null],
-    cnss_number: [null, [Validators.required, Validators.pattern("^\d{8}-\d{2}$")]],
-    contract_type: [null],
+    cnss_number: [null, Validators.pattern(/^\d{8}-\d{2}$/)],
+    contract_type: [null, Validators.required],
     gender: [Gender.male],
-    roles: [null],
+    roles: [null, Validators.required],
     phone_number: [null],
     password: [null, Validators.required],
     confirm_password: [null, Validators.required],
@@ -72,12 +73,24 @@ export class AddEmployeeComponent {
       if(cnss_number.errors && !cnss_number.errors['requiredCnssNumber']) {
         return;
       }
-      if([ContractType.cdi, ContractType.cdd].includes(contract_type.value) && this.isEmptyString(cnss_number.value)) {
+      if([ContractType.Cdi, ContractType.Cdd].includes(contract_type.value) && this.isEmptyString(cnss_number.value)) {
         cnss_number.setErrors({ requiredCnssNumber: true });
       } else {
         cnss_number.setErrors(null);
       }
     };
+  }
+
+  deepCopy(obj: any) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  onSubmit() {
+    const employee: EmployeeCreate = this.deepCopy(this.employeeForm.value);
+    this.employeeService.add(employee).subscribe((data: any) => {
+      alert("Employee added successfully");
+      this.employeeForm.reset();
+    });
   }
 
 

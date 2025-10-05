@@ -1,4 +1,4 @@
-<form [formGroup]="employeeForm">
+<form (ngSubmit)="onSubmit()" [formGroup]="employeeForm">
     <div class="card flex flex-wrap gap-3 p-fluid">
         <div class="flex-auto">
             <label for="first_name">First Name</label>
@@ -65,14 +65,24 @@
         <div class="flex-auto">
             <label for="contract_type">Contract Type</label>
             <p-selectButton [options]="contractTypes" [multiple]="false" formControlName="contract_type" optionLabel="view_value" optionValue="value"></p-selectButton>
+            <div *ngIf="employeeForm.controls['contract_type'].invalid && (employeeForm.controls['contract_type'].dirty || employeeForm.controls['contract_type'].touched)" class="red-text">
+                <div *ngIf="employeeForm.controls['contract_type'].errors?.['required']">
+                    Contrac Type is required.
+                </div>
+            </div>
         </div>
         <div class="flex-auto">
             <label for="gender">Gender</label>
             <p-selectButton [options]="genders" [multiple]="false" formControlName="gender" optionLabel="view_value" optionValue="value"></p-selectButton>
         </div>
         <div class="flex-auto">
-            <label for="role">Role</label>
-            <p-selectButton [options]="roles" [multiple]="true" formControlName="role" optionLabel="view_value" optionValue="value"></p-selectButton>
+            <label for="roles">Role</label>
+            <p-selectButton [options]="roles" [multiple]="true" formControlName="roles" optionLabel="view_value" optionValue="value"></p-selectButton>
+            <div *ngIf="employeeForm.controls['roles'].invalid && (employeeForm.controls['roles'].dirty || employeeForm.controls['roles'].touched)" class="red-text">
+                <div *ngIf="employeeForm.controls['roles'].errors?.['required']">
+                    Roles is required.
+                </div>
+            </div>
         </div>
         <div class="flex-auto">
             <label for="phone_number">Phone Number</label>
@@ -118,4 +128,5 @@
             </div>
         </div>
     </div>
+    <p-button type="submit" onSubmit [disabled]="!employeeForm.valid">Submit</p-button>
 </form>
