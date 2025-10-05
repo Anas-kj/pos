@@ -376,7 +376,7 @@ export class Matchy extends HTMLElement {
   }
 
   startEditMode(cell: any, rowIndex: number, colIndex: number) {
-    if (cell.classList.contains(editableCellClassName)) retutabrn;
+    if (cell.classList.contains(editableCellClassName)) return;
     this.currentSelectedcell = new SelectedCell(cell, rowIndex, colIndex);
     this.markValidCell(cell);
     const prevContent = cell.innerText;
@@ -577,7 +577,7 @@ export class Matchy extends HTMLElement {
     });
   }
 
-  async submit(data: any) {
+  async submit(data: UploadEntry) {
     console.log("this should be overriden");
   }
 
@@ -587,7 +587,7 @@ export class Matchy extends HTMLElement {
   }
 
   generateResult() {
-    const content = new UploadEntry();
+    const lines: { [key: string]: Cell }[]  = [];
     for (const [rowIndex, row] of this.rows.entries()) {
       if (this.deletedRows.has(rowIndex)) continue;
       const data: { [key: string]: Cell } = {};
@@ -596,9 +596,9 @@ export class Matchy extends HTMLElement {
 
         data[header.value] = new Cell(row[colIndex], rowIndex, colIndex);
       }
-      content.lines.push(data);
+      lines.push(data);
     }
-    return content;
+    return  new UploadEntry(lines);
   }
 
   checkCell(cellValue: string, option: Option) {

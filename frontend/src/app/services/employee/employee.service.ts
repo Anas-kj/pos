@@ -5,6 +5,9 @@ import { EmployeeBase } from 'src/models/interfaces/employeeBase';
 import { baseUrl } from 'src/models/baseUrl';
 import { EmployeeFilter } from 'src/models/classes/employeeFilter';
 import { EmployeeCreate } from 'src/models/interfaces/employeeCreate';
+import { ImportPossibleFields } from 'src/models/classes/importPossibleFields';
+import { MatchyUploadEntry } from 'src/models/interfaces/matchyUploadEntry';
+import { BaseOut } from 'src/models/interfaces/baseOut';
 
 @Injectable({
   providedIn: 'root'
@@ -29,4 +32,15 @@ export class EmployeeService {
     const endPointUrl = baseUrl + 'employee/all';
     return this.http.get<PagedResponse<EmployeeBase>>(endPointUrl, httpOptions);
   }
+
+  getOptions() {
+    const endPointUrl = baseUrl + 'employee/possibleImportFields';
+    return this.http.get<ImportPossibleFields>(endPointUrl);
+  }
+
+  upload(data: MatchyUploadEntry){
+    const endPointUrl = baseUrl + 'employee/test';
+    return this.http.post<BaseOut>(endPointUrl, data);
+  }
+
 }

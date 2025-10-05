@@ -1,7 +1,9 @@
 import { Cell } from "./cell.js";
 
 export class UploadEntry {
-    lines: Object[] = [];
+    lines: {[key: string]: Cell;} [] = [];
 
-    constructor() {}
+    constructor(lines: {[key: string]: Cell;} []) {
+        this.lines = lines
+    }
 }
