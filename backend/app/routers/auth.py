@@ -106,7 +106,7 @@ async def forget_password(entry : schemas.ForgetPassword, db: DbDep):
         db.rollback()
         text = str(e)
         add_error(text, db)
-        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys))
+        return schemas.BaseOut(status_code=500, detail=get_error_message(text, error_keys))
     
     return schemas.BaseOut(
         detail="email has been sent",
@@ -145,7 +145,7 @@ def reset_password(entry : schemas.ResetPassword, db: DbDep):
         db.rollback()
         text = str(e)
         add_error(text, db)
-        raise HTTPException(status_code=500, detail=text)
+        return schemas.BaseOut(status_code=500, detail=text)
     
     return schemas.BaseOut(
             detail="Password reset successfully",
