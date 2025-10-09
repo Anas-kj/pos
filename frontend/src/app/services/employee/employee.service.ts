@@ -8,6 +8,8 @@ import { EmployeeCreate } from 'src/models/interfaces/employeeCreate';
 import { ImportPossibleFields } from 'src/models/classes/importPossibleFields';
 import { MatchyUploadEntry } from 'src/models/interfaces/matchyUploadEntry';
 import { BaseOut } from 'src/models/interfaces/baseOut';
+import { Login } from 'src/models/interfaces/login';
+import { LoginToken } from 'src/models/interfaces/LoginToken';
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +43,16 @@ export class EmployeeService {
   upload(data: MatchyUploadEntry){
     const endPointUrl = baseUrl + 'employee/test';
     return this.http.post<BaseOut>(endPointUrl, data);
+  }
+
+  login(form: Login) {
+    let params = new HttpParams()
+      .set('username', form.username)
+      .set('password', form.password)
+    
+    const httpOptions = params
+    const endPointUrl = baseUrl + 'token';
+    return this.http.post<LoginToken>(endPointUrl, httpOptions);
   }
 
 }
