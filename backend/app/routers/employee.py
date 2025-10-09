@@ -12,7 +12,7 @@ from .. import schemas, models, enums
 from ..external_services import email_service
 from ..dependencies import DbDep, paginationParams, currentEmployee
 
-import datetime
+from datetime import datetime, date
 import uuid
 import re
 
@@ -160,11 +160,11 @@ def is_positive_int(field: str):
         res = int(field)
     except ValueError:
         return None
-    return res if res >= 0 else None
+    return str(res) if res >= 0 else None
     
 def is_valid_date(field: str):
     try:
-        return datetime.strptime(field, "%Y-%m-%d")
+        return datetime.strptime(field, "%Y-%m-%d").date()
     except ValueError:
         return None
 
@@ -252,7 +252,18 @@ def  valid_employees_data_and_upload(employees: list, force_upload: bool, backgr
             if emp_wrong_cells:
                 wrong_cells.extend(emp_wrong_cells)
             
-            roles_per_email[emp.get('email')] = emp.pop('employee_roles')
+            email = emp.get('email')
+            roles = emp.pop('roles', [])
+
+            if not email:
+                errors.append(f"Line {line + 1}: Email is required")
+                continue
+            
+            #fix me add hashing
+            random_password = 'generate_random_password()'
+            emp['password'] = random_password
+
+            roles_per_email[email] = roles
             employee_to_add.append(models.Employee(**emp))
     
         for field in unique_fields:
@@ -273,7 +284,7 @@ def  valid_employees_data_and_upload(employees: list, force_upload: bool, backgr
 
             stmt = select(models.Employee).where(unique_fields[field].in_(values))
             duplicated_vals = db.exec(stmt).all()
-            duplicated_vals = {[str(val[0]) for val in duplicated_vals]}
+            duplicated_vals = {str(val[0]) for val in duplicated_vals}
             if duplicated_vals:
                 msg = f"{possible_fields[field]} must be unique. {(', ').join(duplicated_vals)} already exists in the database."
                 (errors if is_field_mandatory(employee, field) else warnings).append(msg)
@@ -317,16 +328,26 @@ def  valid_employees_data_and_upload(employees: list, force_upload: bool, backgr
                 token=token
             )
             activation_codes_to_add.append(activation_code)
-            email_data.append(([emp.email], {
-                "name": emp.first_name,
-                "code": token,
-                "psw": emp.password,
-            }))
+
+            email_data.append({
+                'email': [emp.email],
+                'body': {
+                    "name": emp.first_name,
+                    "code": str(token),
+                    "psw": emp.password,
+                },
+                'template': enums.EmailTemplate.ConfirmAccount
+            })
 
         db.add_all(activation_codes_to_add)
 
         for email_datum in email_data:
-            backgroundTasks.add_task(email_service.simple_send, email_datum[0], email_datum[1])
+            backgroundTasks.add_task(
+                email_service.simple_send,
+                email_datum['email'],
+                email_datum['body'],
+                email_datum['template']
+        )
         
         db.commit()
 
@@ -379,4 +400,4 @@ async def upload(entry: schemas.MatchyUploadEntry, backgroundTasks: BackgroundTa
             detail=f"Missing mandatory fields: {', '.join([mandatory_fields[field] for field in missing_mandatory_fields])}"
         ) 
     
-    return valid_employees_data_and_upload(employees, backgroundTasks, entry.forceUpload, db)
+    return valid_employees_data_and_upload(employees, entry.forceUpload, backgroundTasks, db)
