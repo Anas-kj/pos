@@ -1,4 +1,4 @@
  export interface BaseOut {
-    detail: String
-    status_code: Number
+    detail: string
+    status_code: number
 }

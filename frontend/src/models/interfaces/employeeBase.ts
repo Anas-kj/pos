@@ -8,11 +8,11 @@ export interface EmployeeBase {
     last_name: string;
     email: string;
     number: number;
-    birth_date: Date | undefined;
-    address: string | undefined;
-    cnss_number: string | undefined;
+    birth_date: string | null;
+    address: string | null;
+    cnss_number: string | null;
     contract_type: ContractType;
     gender: Gender;
     roles: ListResponse<Role>;
-    phone_number: string | undefined;
+    phone_number: string | null;
 }

@@ -59,7 +59,7 @@ export class EmployeesComponent implements OnInit{
   }
 
   onPageChanged(event: any) {
-    this.employeeFilter.page_number = event.page / event.rows + 1;
+    this.employeeFilter.page_number =  Math.floor(event.first / event.rows) + 1;
     this.employeeFilter.page_size = event.rows;
     this.loadEmployees();
   } 
@@ -67,7 +67,7 @@ export class EmployeesComponent implements OnInit{
 
   openAddEmployeeDialogue() {
     this.ref = this.dialogService.open(AddEmployeeComponent, {
-      width: '70%',
+      width: '100%',
       height: '70%',
       contentStyle: { overflow: 'auto' },
       baseZIndex: 10000,
@@ -79,7 +79,13 @@ export class EmployeesComponent implements OnInit{
   }
 
   openImportEmployeesDialogue(){
-    this.ref = this.dialogService.open(ImportEmployeesComponent, {});
+    this.ref = this.dialogService.open(ImportEmployeesComponent, {
+      width: '70%',
+      height: '70%',
+      contentStyle: { overflow: 'auto' },
+      baseZIndex: 10000,
+      maximizable: true
+    });
     this.ref.onClose.subscribe((data: any) => {
       this.loadEmployees();
     });

@@ -8,6 +8,7 @@ import { AddEmployeeComponent } from './add-employee/add-employee.component';
 import { EditEmployeeComponent } from './edit-employee/edit-employee.component';
 import { DeleteEmployeeComponent } from './delete-employee/delete-employee.component';
 import { ImportEmployeesComponent } from './import-employees/import-employees.component';
+import { MessageService } from 'primeng/api';
 import { MenubarModule } from 'primeng/menubar';
 import { SidebarModule } from 'primeng/sidebar';
 import { MenuModule } from 'primeng/menu';
@@ -20,6 +21,7 @@ import { CalendarModule } from 'primeng/calendar';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { DividerModule } from 'primeng/divider';
 import { PasswordModule } from 'primeng/password';
+import { ToastModule } from 'primeng/toast';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component'; 
 import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -51,9 +53,10 @@ import { ReactiveFormsModule } from '@angular/forms';
     CalendarModule,
     SelectButtonModule,
     PasswordModule,
-    DividerModule
+    DividerModule,
+    ToastModule
   ],
-  providers: [],
+  providers: [MessageService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

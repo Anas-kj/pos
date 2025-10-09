@@ -3,9 +3,11 @@ import { FormBuilder, FormGroup} from '@angular/forms';
 import { EmployeeService } from '../services/employee/employee.service';
 import { Gender, genders } from 'src/models/interfaces/enums/gender';
 import { Validators } from '@angular/forms';
+import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ContractType, contract_types } from 'src/models/interfaces/enums/contractType';
 import { roles } from 'src/models/interfaces/enums/role';
 import { EmployeeCreate } from 'src/models/interfaces/employeeCreate';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-add-employee',
@@ -37,7 +39,9 @@ export class AddEmployeeComponent {
   
   constructor(
     private employeeService: EmployeeService, 
-    private fb: FormBuilder 
+    private messageService: MessageService,
+    private fb: FormBuilder,
+    public ref: DynamicDialogRef,
   ) {
     this.contractTypes = contract_types;
     this.genders = genders;
@@ -86,10 +90,40 @@ export class AddEmployeeComponent {
   }
 
   onSubmit() {
-    const employee: EmployeeCreate = this.deepCopy(this.employeeForm.value);
-    this.employeeService.add(employee).subscribe((data: any) => {
-      alert("Employee added successfully");
-      this.employeeForm.reset();
+    const form = this.deepCopy(this.employeeForm.value)
+    for (const field in form){
+      if (this.isEmptyString(form[field])){
+        form[field] = null;
+      }
+    }
+    const employee: EmployeeCreate = this.deepCopy(form);
+    employee.birth_date = employee.birth_date ? employee.birth_date?.split('T')[0] : null;
+    // this.employeeService.add(employee).subscribe(
+    //   (data: any) => {
+    //     const success = data.status_code === 201; try with the !== 500
+    //     const severity = success ? 'success' : 'error';
+    //     this.messageService.add({severity, summary: severity, detail: data.detail});
+        
+    //     if(success){
+    //       this.ref.close();
+    //     }
+    //   });
+    this.employeeService.add(employee).subscribe({
+      next: (data: any) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Employee added successfully'
+        });
+        this.ref.close();
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: error.error?.detail || 'Failed to add employee'
+        });
+      }
     });
   }
 
