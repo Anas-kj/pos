@@ -29,7 +29,7 @@ error_keys = {
     "employees_pkey": "Employee with this id doesn't exist",
 }
 
-@app.post("/", response_model=schemas.EmployeeOut)
+@app.post("/")
 async def add(employee: schemas.EmployeeCreate, db: DbDep): #, current_employee: currentEmployee):
     try:
         db_employee = await add_employee(db=db, employee=employee)
@@ -37,9 +37,9 @@ async def add(employee: schemas.EmployeeCreate, db: DbDep): #, current_employee:
         db.rollback()
         text = str(e)
         add_error(text, db)
-        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys))
+        return schemas.BaseOut(status_code=500, detail=get_error_message(text, error_keys))
 
-    return schemas.EmployeeOut(**db_employee.__dict__)
+    return schemas.BaseOut(status_code=201, detail="Employee added successfully and activation email sent")
     
 
 @app.put("/{id}", response_model=schemas.BaseOut)
@@ -56,7 +56,7 @@ async def edit_employee(id: int, entry: schemas.EmployeeEdit, db: DbDep):
         db.rollback()
         text = str(e)
         add_error(text, db)
-        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys)(text))
+        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys))
     
     return schemas.BaseOut(
         detail="Employee updated successfully", 
@@ -72,7 +72,7 @@ def get_all(db: DbDep, pagination_param: paginationParams, name_substr: str = No
     except Exception as e:
         text = str(e)
         add_error(text, db)
-        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys)(text))
+        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys))
     return schemas.EmployeesOut(
         detail="Employees retrieved successfully",
         status_code=status.HTTP_200_OK,
@@ -80,7 +80,12 @@ def get_all(db: DbDep, pagination_param: paginationParams, name_substr: str = No
         page_size=pagination_param.page_size,
         total_pages=total_pages,
         total_records=total_records,
-        list=[schemas.EmployeeOut(**employee.__dict__) for employee in employees]
+        list=[
+            schemas.EmployeeOut(
+                **{**employee.__dict__, 'roles': [er.role for er in employee.roles]}
+            ) 
+            for employee in employees
+        ]
     )
 
 email_regex =  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -330,7 +335,7 @@ def  valid_employees_data_and_upload(employees: list, force_upload: bool, backgr
         text = str(e)
         add_error(text, db)
 
-        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys)(text))
+        raise HTTPException(status_code=500, detail=get_error_message(text, error_keys))
 
     return schemas.ImportResponse(
         detail="File imported successfully",
@@ -365,11 +370,11 @@ def getPossibleFields(db: DbDep):
 async def upload(entry: schemas.MatchyUploadEntry, backgroundTasks: BackgroundTasks ,db: DbDep):
     employees = entry.lines
     if not employees:
-        raise HTTPException(status_code=400, detail="No employees to import")
+        return schemas.BaseOut(status_code=400, detail="No employees to import")
     
     missing_mandatory_fields = set(mandatory_fields.keys()) - set(employees[0].keys())
     if missing_mandatory_fields:
-        raise HTTPException(
+        return schemas.BaseOut(
             status_code=400, 
             detail=f"Missing mandatory fields: {', '.join([mandatory_fields[field] for field in missing_mandatory_fields])}"
         ) 

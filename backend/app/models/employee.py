@@ -1,7 +1,7 @@
 from sqlalchemy import CheckConstraint
 from sqlmodel import Relationship, SQLModel, Field
 from ..enums import ContractType, Gender, AccountStatus
-from datetime import datetime, UTC
+from datetime import date, datetime, UTC
 from .employeeRole import EmployeeRole
 
 
@@ -14,13 +14,13 @@ class Employee(SQLModel, table=True):
     email : str = Field(index=True, unique=True)
     password: str = Field(index=True)
     number: str = Field(default=None, index=True)
-    birth_date: str | None = Field(default=None, index=True)
+    birth_date: date | None = Field(default=None, index=True)
     address: str | None = Field(default=None, index=True)
-    cnss_number: str = Field(default=None, index=True)
-    contract_type: ContractType = Field(default=None, index=True)
+    cnss_number: str | None = Field(default=None, index=True)
+    contract_type: ContractType | None = Field(default=None, index=True)
     gender : Gender = Field(default=None, index=True)
     account_status: AccountStatus = Field(default=AccountStatus.inactive)
-    phone_number : str = Field(default=None, index=True)
+    phone_number : str | None = Field(default=None, index=True)
     created_at: datetime = Field(default=datetime.now(UTC), index=True)
 
     roles: list[EmployeeRole] = Relationship()

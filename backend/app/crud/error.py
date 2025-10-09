@@ -1,7 +1,3 @@
-
-
-
-
 from fastapi import HTTPException
 from backend.app import models
 
