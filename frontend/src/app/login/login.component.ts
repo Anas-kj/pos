@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { EmployeeService } from '../services/employee/employee.service';
+import { AuthService } from '../services/auth/auth.service';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Login } from 'src/models/interfaces/login';
 import { LoginToken } from 'src/models/interfaces/LoginToken';
@@ -20,7 +20,7 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder, 
-    private employeeService: EmployeeService,
+    private authService: AuthService,
     private messageService: MessageService,
     private router: Router,
   ) {}
@@ -33,7 +33,7 @@ export class LoginComponent {
   onSubmit() {
     const form: Login = this.deepCopy(this.loginForm.value)
 
-    this.employeeService.login(form).subscribe(
+    this.authService.login(form).subscribe(
       (data: LoginToken) => {
         const success = data.status_code === 200;
         const severity = success ? 'success' : 'error';
