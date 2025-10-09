@@ -98,7 +98,7 @@ class ImportResponse(BaseOut):
     warnings: Optional[str] = None
     wrong_cells: Optional[list[MatchyWrongCell]] = [] 
 
-class Token(BaseModel):
+class Token(BaseOut):
     access_token: str
     token_type: str
 

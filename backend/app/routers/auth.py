@@ -2,7 +2,6 @@
 from datetime import timedelta
 import datetime
 from fastapi import APIRouter, HTTPException, status
-from ..schemas import Token
 from backend.app import enums, models, schemas
 from backend.app.OAuth2 import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_employee, create_access_token, get_password_hash
 from backend.app.crud.auth import get_confirmation_code, add_reset_code, get_reset_code
@@ -19,7 +18,7 @@ app = APIRouter(
 error_keys = {}
 
 @app.post("/token", response_model=schemas.Token)
-async def login_for_access_token(db: DbDep, form_data: formDataDep):
+async def login(db: DbDep, form_data: formDataDep):
     try:
         employee = authenticate_employee(db, form_data.username, form_data.password)
         if not employee:
@@ -36,9 +35,14 @@ async def login_for_access_token(db: DbDep, form_data: formDataDep):
         db.rollback()
         text = str(e)
         add_error(text, db)
-        raise HTTPException(status_code=500, detail=text)
+        return schemas.BaseOut(status_code=500, detail=text)
     
-    return Token(access_token=access_token, token_type="bearer")
+    return schemas.Token(
+        status_code=status.HTTP_200_OK,
+        detail="Login successful",
+        access_token=access_token, 
+        token_type="bearer"
+    )
 
 
 @app.patch("/confirmAccount", response_model=schemas.BaseOut)
