@@ -58,8 +58,8 @@ class ForgetPassword(OurBaseModel):
 
 class ResetPassword(OurBaseModel):
     reset_code: str
-    psw: str
-    confirm_psw: str
+    password: str
+    confirm_password: str
 
 class MatchyCondition(OurBaseModel):
     property: ConditionProperty

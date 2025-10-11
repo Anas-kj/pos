@@ -30,7 +30,7 @@ error_keys = {
 }
 
 @app.post("/")
-async def add(employee: schemas.EmployeeCreate, db: DbDep): #, current_employee: currentEmployee):
+async def add(employee: schemas.EmployeeCreate, db: DbDep, current_employee: currentEmployee):
     try:
         db_employee = await add_employee(db=db, employee=employee)
     except Exception as e:
@@ -66,7 +66,7 @@ async def edit_employee(id: int, entry: schemas.EmployeeEdit, db: DbDep):
 
 # Having getting roles problem
 @app.get("/all", response_model=schemas.EmployeesOut)
-def get_all(db: DbDep, pagination_param: paginationParams, name_substr: str = None):
+def get(db: DbDep, pagination_param: paginationParams, current_employee: currentEmployee, name_substr: str = None):
     try:
         employees, total_records, total_pages = get_all_emp(db, pagination_param, name_substr)
     except Exception as e:

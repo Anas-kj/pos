@@ -17,7 +17,7 @@ app = APIRouter(
 
 error_keys = {}
 
-@app.post("/token", response_model=schemas.Token)
+@app.post("/token")
 async def login(db: DbDep, form_data: formDataDep):
     try:
         employee = authenticate_employee(db, form_data.username, form_data.password)
@@ -121,20 +121,20 @@ def reset_password(entry : schemas.ResetPassword, db: DbDep):
         reset_code = get_reset_code(db, entry.reset_code)
 
         if not reset_code:
-            raise HTTPException(status_code=404, detail="Token not found")
+            return schemas.BaseOut(status_code=404, detail="Token not found")
         
         if reset_code.status == enums.TokenStatus.Used:
-            raise HTTPException(status_code=400, detail="Token already used")
+            return schemas.BaseOut(status_code=400, detail="Token already used")
         
         diff = (datetime.now() - reset_code.created_at).seconds
         if diff > 3500:
-            raise HTTPException(status_code=400, detail="Token expired")
+            return schemas.BaseOut(status_code=400, detail="Token expired")
         
-        if entry.psw != entry.confirm_psw:
-            raise HTTPException(status_code=400, detail="Passwords do not match")
+        if entry.password != entry.confirm_password:
+            return schemas.BaseOut(status_code=400, detail="Passwords do not match")
         
         db_employee = db.get(models.Employee, reset_code.employee_id)
-        db_employee.password = get_password_hash(entry.psw)
+        db_employee.password = get_password_hash(entry.password)
 
         db_token = db.get(models.ResetPassword, reset_code.id)
         db_token.status = enums.TokenStatus.Used
