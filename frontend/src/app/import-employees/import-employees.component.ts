@@ -21,7 +21,7 @@ export class ImportEmployeesComponent implements OnInit {
 
   constructor(
     private employeeService: EmployeeService,
-    private messageService: MessageService,
+    public messageService: MessageService,
     public ref: DynamicDialogRef
   ) {}
 

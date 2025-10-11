@@ -27,6 +27,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { LoginComponent } from './login/login.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { ConfirmAccountComponent } from './confirm-account/confirm-account.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +41,8 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
     PageNotFoundComponent,
     LoginComponent,
     ForgetPasswordComponent,
+    ResetPasswordComponent,
+    ConfirmAccountComponent,
   ],
   imports: [
     HttpClientModule,

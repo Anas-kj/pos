@@ -18,7 +18,7 @@ export class ForgetPasswordComponent {
   constructor(
     private fb: FormBuilder, 
     private authService: AuthService,
-    private messageService: MessageService,
+    public messageService: MessageService,
   ) {}
 
   deepCopy(obj: any) {

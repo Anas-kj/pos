@@ -8,6 +8,8 @@ import { debounceTime } from 'rxjs';
 import { EmployeeFilter } from 'src/models/classes/employeeFilter';
 import { AddEmployeeComponent } from '../add-employee/add-employee.component';
 import { ImportEmployeesComponent } from '../import-employees/import-employees.component';
+import { MessageService } from 'primeng/api';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-employees',
@@ -15,6 +17,7 @@ import { ImportEmployeesComponent } from '../import-employees/import-employees.c
   styleUrls: ['./employees.component.css'],
   providers: [DialogService]
 })
+
 export class EmployeesComponent implements OnInit{
   employees!: EmployeeBase[];
   loading: boolean = true;
@@ -29,7 +32,9 @@ export class EmployeesComponent implements OnInit{
   constructor(
     private employeeService: EmployeeService, 
     private fb: FormBuilder,
-    public dialogService: DialogService  
+    private router: Router,
+    public dialogService: DialogService,  
+    public messageService: MessageService,
   ) {
 
     this.employeeFilter = new EmployeeFilter();
@@ -51,10 +56,17 @@ export class EmployeesComponent implements OnInit{
   }
 
   loadEmployees() {
-    this.employeeService.getEmployees(this.employeeFilter).subscribe((res: PagedResponse<EmployeeBase>) => {
-      this.employees = res.list;
-      this.totalRecords = res.total_records;
-      this.loading = false; 
+    this.employeeService.getEmployees(this.employeeFilter).subscribe({
+      next: (res: PagedResponse<EmployeeBase>) => {
+        this.employees = res.list;
+        this.totalRecords = res.total_records;
+        this.loading = false; 
+      },
+      error: (err) => {
+        this.messageService.add({severity: 'error', summary: err.statusText, detail: err.error.detail});
+        this.router.navigate(['/login']);
+      }
+
     });
   }
 
@@ -62,7 +74,7 @@ export class EmployeesComponent implements OnInit{
     this.employeeFilter.page_number =  Math.floor(event.first / event.rows) + 1;
     this.employeeFilter.page_size = event.rows;
     this.loadEmployees();
-  } 
+  }
 
 
   openAddEmployeeDialogue() {
@@ -78,7 +90,7 @@ export class EmployeesComponent implements OnInit{
     });
   }
 
-  openImportEmployeesDialogue(){
+  openImportEmployeesDialogue() {
     this.ref = this.dialogService.open(ImportEmployeesComponent, {
       width: '70%',
       height: '70%',

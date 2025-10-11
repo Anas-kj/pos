@@ -23,12 +23,17 @@ export class EmployeeService {
   }
 
   getEmployees(employeeFilter: EmployeeFilter) {
-    let params = new HttpParams()
+    const params = new HttpParams()
       .set('name_substr', employeeFilter.name_substr as string)
       .set('page_size', employeeFilter.page_size)
       .set('page_number', employeeFilter.page_number);
+
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
     
-    const httpOptions = {params}
+    const httpOptions = {params, headers};
     const endPointUrl = baseUrl + 'employee/all';
     return this.http.get<PagedResponse<EmployeeBase>>(endPointUrl, httpOptions);
   }
