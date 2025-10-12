@@ -29,7 +29,11 @@ async def login(db: DbDep, form_data: formDataDep):
             )
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
-            data={"email": employee.email}, expires_delta=access_token_expires
+            data={
+                "email": employee.email,
+                "roles": [emp_role.role.value for emp_role in employee.roles]
+            }, 
+            expires_delta=access_token_expires
         )
     except Exception as e:
         db.rollback()
