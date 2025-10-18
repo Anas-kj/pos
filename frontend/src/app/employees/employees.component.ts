@@ -79,8 +79,6 @@ export class EmployeesComponent implements OnInit{
 
   openAddEmployeeDialogue() {
     this.ref = this.dialogService.open(AddEmployeeComponent, {
-      width: '100%',
-      height: '70%',
       contentStyle: { overflow: 'auto' },
       baseZIndex: 10000,
       maximizable: true

@@ -651,7 +651,7 @@ export class Matchy extends HTMLElement {
           condition.value as string[]
         );
       }
-
+      
       return evaluateConditions[condition.comparer](
         value.length,
         Number(condition.value)

@@ -1,13 +1,16 @@
-<form [formGroup]="employeeFilterForm" class="p-inputgroup">
-    <span class="p-inputgroup-addon">
-        <i class="pi pi-user"></i>
-    </span>
-    <input id="name_substr" type="text" pInputText formControlName="name_substr" placeholder="Employee Name">
-  
-</form>
+<div class="flex gap-3 mb-3 px-1">
+    <form [formGroup]="employeeFilterForm" class="flex-1">
+        <div class="p-inputgroup ">
+            <span class="p-inputgroup-addon">
+                <i class="pi pi-user"></i>
+            </span>
+            <input id="name_substr" type="text" pInputText formControlName="name_substr" placeholder="Employee Name">
+        </div>
+    </form>
 
-<p-button (click)="openAddEmployeeDialogue()" label="Add Employee" icon="pi pi-plus-circle"></p-button>
-<p-button (click)="openImportEmployeesDialogue()" label="Import Employees" icon="pi pi-file-import"></p-button>
+    <p-button (click)="openAddEmployeeDialogue()" label="Add Employee" icon="pi pi-plus-circle"></p-button>
+    <p-button (click)="openImportEmployeesDialogue()" label="Import Employees" icon="pi pi-file-import"></p-button>
+</div>
 
 <div class="card">
     <p-table

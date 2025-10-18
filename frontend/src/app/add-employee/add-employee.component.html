@@ -1,7 +1,7 @@
 <form (ngSubmit)="onSubmit()" [formGroup]="employeeForm">
-    <div class="card flex flex-wrap gap-3 p-fluid">
-        <div class="flex-auto">
-            <label for="first_name">First Name</label>
+    <div class="flex gap-3 mb-3">
+        <div class="flex-1">
+            <label for="first_name" class="block font-bold mb-2">First Name</label>
             <input id="first_name" type="text" pInputText formControlName="first_name">
             <div *ngIf="employeeForm.controls['first_name'].invalid && (employeeForm.controls['first_name'].dirty || employeeForm.controls['first_name'].touched)" class="red-text">
                 <div *ngIf="employeeForm.controls['first_name'].errors?.['required']">
@@ -9,8 +9,8 @@
                 </div>
             </div>
         </div>
-        <div class="flex-auto">
-            <label for="last_name">Last Name</label>
+        <div class="flex-1">
+            <label class="block font-bold mb-2" for="last_name">Last Name</label>
             <input id="last_name" type="text" pInputText formControlName="last_name">
             <div *ngIf="employeeForm.controls['last_name'].invalid && (employeeForm.controls['last_name'].dirty || employeeForm.controls['last_name'].touched)" class="red-text">
                 <div *ngIf="employeeForm.controls['last_name'].errors?.['required']">
@@ -18,8 +18,10 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="flex gap-3 mb-3">
         <div class="flex-auto">
-            <label for="email">Email</label>
+            <label class="block font-bold mb-2" for="email">Email</label>
             <input id="email" type="text" pInputText formControlName="email">
             <div *ngIf="employeeForm.controls['email'].invalid && (employeeForm.controls['email'].dirty || employeeForm.controls['email'].touched)" class="red-text">
                 <div *ngIf="employeeForm.controls['email'].errors?.['required']">
@@ -31,8 +33,8 @@
             </div>
         </div>
         <div class="flex-auto">
-            <label for="number">Number</label>
-            <p-inputNumber inputId="number" formControlName="number"> </p-inputNumber>
+            <label class="block font-bold mb-2" for="number">Number</label>
+            <p-inputNumber [style]="{'width' : '100%'}" inputId="number" formControlName="number"> </p-inputNumber>
             <div *ngIf="employeeForm.controls['number'].invalid && (employeeForm.controls['number'].dirty || employeeForm.controls['number'].touched)" class="red-text">
                 <div *ngIf="employeeForm.controls['number'].errors?.['required']">
                     Number is required.
@@ -42,16 +44,20 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="flex gap-3 mb-3">
         <div class="flex-auto">
-            <label for="number">Birth Date </label>
-            <p-calendar formControlName="birth_date" [showIcon]="true"></p-calendar>
-        </div>
-        <div class="flex-auto">
-            <label for="address">Address</label>
+            <label class="block font-bold mb-2" for="address">Address</label>
             <input id="address" type="text" pInputText formControlName="address">
         </div>
         <div class="flex-auto">
-            <label for="cnss_number">CNSS Number</label>
+            <label class="block font-bold mb-2" for="number">Birth Date </label>
+            <p-calendar formControlName="birth_date" [showIcon]="true" styleClass="w-full"></p-calendar>
+        </div>
+    </div>
+    <div class="flex gap-3 mb-3">
+        <div class="flex-auto">
+            <label class="block font-bold mb-2" for="cnss_number">CNSS Number</label>
             <input id="cnss_number" type="text" pInputText formControlName="cnss_number">
             <div *ngIf="employeeForm.controls['cnss_number'].invalid && (employeeForm.controls['cnss_number'].dirty || employeeForm.controls['cnss_number'].touched)" class="red-text">
                 <div *ngIf="employeeForm.controls['cnss_number'].errors?.['requiredCnssNumber']">
@@ -63,70 +69,71 @@
             </div>
         </div>
         <div class="flex-auto">
-            <label for="contract_type">Contract Type</label>
-            <p-selectButton [options]="contractTypes" [multiple]="false" formControlName="contract_type" optionLabel="view_value" optionValue="value"></p-selectButton>
+            <label class="block font-bold mb-2" for="phone_number">Phone Number</label>
+            <input id="phone_number" type="text" pInputText formControlName="phone_number">
+        </div>
+    </div>
+    <div class="flex gap-3 mb-3">
+        <div class="flex-auto">   
+            <label class="block font-bold mb-2" for="password">Password</label>
+            <p-password formControlName="password" styleClass="w-full" inputStyleClass="w-full" >
+                <ng-template pTemplate="header">
+                    <h6>Pick a password</h6>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <p-divider></p-divider>
+                    <p class="mt-2">Suggestions</p>
+                    <ul class="pl-2 ml-2 mt-0" style="line-height: 1.5">
+                        <li>At least one lowercase</li>
+                        <li>At least one uppercase</li>
+                        <li>At least one numeric</li>
+                        <li>Minimum 8 characters</li>
+                    </ul>
+                </ng-template>
+            </p-password>
+            <div *ngIf="employeeForm.controls['password'].invalid && (employeeForm.controls['password'].dirty || employeeForm.controls['password'].touched)" class="red-text">
+                <div *ngIf="employeeForm.controls['password'].errors?.['required']">
+                    Password is required.
+                </div>
+            </div>
+        </div>
+        <div class="flex-auto">   
+            <label class="block font-bold mb-2" for="confirm_password">Confirm Password</label>
+            <p-password formControlName="confirm_password" [feedback]="false" styleClass="w-full" inputStyleClass="w-full"></p-password>
+            <div *ngIf="employeeForm.controls['confirm_password'].invalid && (employeeForm.controls['confirm_password'].dirty || employeeForm.controls['confirm_password'].touched)" class="red-text">
+                <div *ngIf="employeeForm.controls['confirm_password'].errors?.['required']">
+                    Confirm Password is required
+                </div>
+                <div *ngIf="employeeForm.controls['confirm_password'].errors?.['passwordMatch']">
+                    Confirm Password and Password must match.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="flex gap-3 mb-3">
+        <div class="flex-auto">
+            <label class="block font-bold mb-2" for="gender">Gender</label>
+            <p-selectButton [options]="genders" [multiple]="false" formControlName="gender" optionLabel="view_value" optionValue="value"></p-selectButton>
+        </div>
+        <div class="flex-auto">
+            <label class="block font-bold mb-2" for="contract_type">Contract Type</label>
+            <p-selectButton [style]="{'width' : '100%'}" [options]="contractTypes" [multiple]="false" formControlName="contract_type" optionLabel="view_value" optionValue="value"></p-selectButton>
             <div *ngIf="employeeForm.controls['contract_type'].invalid && (employeeForm.controls['contract_type'].dirty || employeeForm.controls['contract_type'].touched)" class="red-text">
                 <div *ngIf="employeeForm.controls['contract_type'].errors?.['required']">
                     Contrac Type is required.
                 </div>
             </div>
-        </div>
-        <div class="flex-auto">
-            <label for="gender">Gender</label>
-            <p-selectButton [options]="genders" [multiple]="false" formControlName="gender" optionLabel="view_value" optionValue="value"></p-selectButton>
-        </div>
-        <div class="flex-auto">
-            <label for="roles">Role</label>
-            <p-selectButton [options]="roles" [multiple]="true" formControlName="roles" optionLabel="view_value" optionValue="value"></p-selectButton>
-            <div *ngIf="employeeForm.controls['roles'].invalid && (employeeForm.controls['roles'].dirty || employeeForm.controls['roles'].touched)" class="red-text">
-                <div *ngIf="employeeForm.controls['roles'].errors?.['required']">
-                    Roles is required.
-                </div>
-            </div>
-        </div>
-        <div class="flex-auto">
-            <label for="phone_number">Phone Number</label>
-            <input id="phone_number" type="text" pInputText formControlName="phone_number">
-        </div>
-        <div class="flex-auto">   
-            <div class="card flex justify-content-center">
-                <label for="password">Password</label>
-                <p-password formControlName="password">
-                    <ng-template pTemplate="header">
-                        <h6>Pick a password</h6>
-                    </ng-template>
-                    <ng-template pTemplate="footer">
-                        <p-divider></p-divider>
-                        <p class="mt-2">Suggestions</p>
-                        <ul class="pl-2 ml-2 mt-0" style="line-height: 1.5">
-                            <li>At least one lowercase</li>
-                            <li>At least one uppercase</li>
-                            <li>At least one numeric</li>
-                            <li>Minimum 8 characters</li>
-                        </ul>
-                    </ng-template>
-                </p-password>
-                <div *ngIf="employeeForm.controls['password'].invalid && (employeeForm.controls['password'].dirty || employeeForm.controls['password'].touched)" class="red-text">
-                    <div *ngIf="employeeForm.controls['password'].errors?.['required']">
-                        Password is required.
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="flex-auto">   
-            <div class="card flex justify-content-center">
-                <label for="confirm_password">Confirm Password</label>
-                <p-password formControlName="confirm_password" [feedback]="false"></p-password>
-                <div *ngIf="employeeForm.controls['confirm_password'].invalid && (employeeForm.controls['confirm_password'].dirty || employeeForm.controls['confirm_password'].touched)" class="red-text">
-                    <div *ngIf="employeeForm.controls['confirm_password'].errors?.['required']">
-                        Confirm Password is required
-                    </div>
-                    <div *ngIf="employeeForm.controls['confirm_password'].errors?.['passwordMatch']">
-                        Confirm Password and Password must match.
-                    </div>
-                </div>
+        </div>    
+    </div>
+    <div class="mb-3">
+        <label class="block font-bold mb-2" for="roles">Roles</label>
+        <p-selectButton [options]="roles" [multiple]="true" formControlName="roles" optionLabel="view_value" optionValue="value"></p-selectButton>
+        <div *ngIf="employeeForm.controls['roles'].invalid && (employeeForm.controls['roles'].dirty || employeeForm.controls['roles'].touched)" class="red-text">
+            <div *ngIf="employeeForm.controls['roles'].errors?.['required']">
+                Roles is required.
             </div>
         </div>
     </div>
+
     <p-button type="submit" onSubmit [disabled]="!employeeForm.valid">Submit</p-button>
 </form>

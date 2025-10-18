@@ -20,6 +20,7 @@
     "@angular/router": "^16.2.0",
     "@types/date-fns": "^2.6.3",
     "date-fns": "^4.1.0",
+    "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
     "primeng": "^16.4.4",
     "rxjs": "~7.8.0",

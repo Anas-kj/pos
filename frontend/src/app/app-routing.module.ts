@@ -8,16 +8,27 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
 import { ConfirmAccountComponent } from './confirm-account/confirm-account.component';
 import { canActivateRoute } from './services/guard/guard.service';
 import { Role } from 'src/models/interfaces/enums/role';
+import { MainLayoutComponent } from './main-layout/main-layout.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  { path: 'employees', component: EmployeesComponent, canActivate: [canActivateRoute], data: {permittedRoles: [Role.Admin, Role.Superuser]} },
+  { path: '',   redirectTo: '/login', pathMatch: 'full' },
+  { path: '',
+   component: MainLayoutComponent,
+   children: [
+      {
+      path: 'employees', 
+      component: EmployeesComponent, 
+      canActivate: [canActivateRoute], 
+      data: {permittedRoles: [Role.Admin, Role.Superuser]} 
+      }
+    ]
+  },
   { path: 'forgetPassword', component: ForgetPasswordComponent },
   { path: 'resetPassword', component: ResetPasswordComponent },
   { path: 'confirmAccount', component: ConfirmAccountComponent },
-  { path: '',   redirectTo: '/login', pathMatch: 'full' },
-  { path: '**', component: PageNotFoundComponent },
-  // { path: 'second-component', component: SecondComponent },
+  { path: '404', component: PageNotFoundComponent },
+  { path: '**', redirectTo: "/404" },
 ];
 
 @NgModule({

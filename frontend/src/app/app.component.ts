@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { PrimeNGConfig, MenuItem } from 'primeng/api';
+import { Component } from '@angular/core';
 
 
 @Component({
@@ -7,37 +6,7 @@ import { PrimeNGConfig, MenuItem } from 'primeng/api';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
 
-  menuBarItems: MenuItem[] | undefined;
-  sidebarVisible = false;
-  menuItems: MenuItem[] | undefined;
 
-  constructor(private primengConfig: PrimeNGConfig) {}
-
-  ngOnInit() {
-    this.primengConfig.ripple = true;
-
-    this.menuBarItems = [
-      {
-          label: '',
-          icon: 'pi pi-bars',
-          command: () => { this.sidebarVisible = !this.sidebarVisible; }
-      },  
-      {
-          label: 'Quit',
-          icon: 'pi pi-fw pi-power-off'
-      }
-  ];
-
-  this.menuItems = [
-    {
-        label: 'Employees',
-        icon: 'pi pi-users',
-        routerLink: '/employees'
-    } 
-];
-
-  }
-  
 }

@@ -29,6 +29,7 @@ import { LoginComponent } from './login/login.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ConfirmAccountComponent } from './confirm-account/confirm-account.component';
+import { MainLayoutComponent } from './main-layout/main-layout.component';
 
 @NgModule({
   declarations: [
@@ -43,6 +44,7 @@ import { ConfirmAccountComponent } from './confirm-account/confirm-account.compo
     ForgetPasswordComponent,
     ResetPasswordComponent,
     ConfirmAccountComponent,
+    MainLayoutComponent,
   ],
   imports: [
     HttpClientModule,
