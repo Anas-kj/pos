@@ -4,3 +4,4 @@ class ConditionProperty(BasicEnum):
     value = "value"
     regex = "regex"
     length = "length"
+    date = "date"

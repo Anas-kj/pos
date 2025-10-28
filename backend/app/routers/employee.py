@@ -131,7 +131,26 @@ options = [
         schemas.MatchyCondition(property=enums.ConditionProperty.regex, comparer=enums.Comparer.e, value=email_regex)
     ]),
     schemas.MatchyOption(display_value=mandatory_fields["number"], value="number", mandatory=True, type=enums.FieldType.integer),
-    schemas.MatchyOption(display_value=optional_fields["birth_date"], value="birth_date", mandatory=False, type=enums.FieldType.string),
+    schemas.MatchyOption(
+    display_value=optional_fields["birth_date"], 
+    value="birth_date", 
+    mandatory=False, 
+    type=enums.FieldType.date,
+    conditions=[
+        schemas.MatchyCondition(
+            property=enums.ConditionProperty.date,
+            comparer=enums.Comparer.gte,
+            value=16,
+            custom_fail_message="Employee must be at least 16 years old"
+        ),
+        schemas.MatchyCondition(
+            property=enums.ConditionProperty.date,
+            comparer=enums.Comparer.lte,
+            value=100,
+            custom_fail_message="Age cannot be more than 100 years"
+        )
+    ]
+),
     schemas.MatchyOption(display_value=optional_fields["address"], value="address", mandatory=False, type=enums.FieldType.string),
     schemas.MatchyOption(display_value=mandatory_with_condition["cnss_number"][0], value="cnss_number", mandatory=False, type=enums.FieldType.string, conditions=[
         schemas.MatchyCondition(property=enums.ConditionProperty.regex, comparer=enums.Comparer.e, value=cnss_regex)
@@ -144,7 +163,7 @@ options = [
     ]),
     schemas.MatchyOption(display_value=mandatory_fields["roles"], value="roles", mandatory=True, type=enums.FieldType.string),
     schemas.MatchyOption(display_value=optional_fields["phone_number"], value="phone_number", mandatory=False, type=enums.FieldType.string, conditions=[
-        schemas.MatchyCondition(property=enums.ConditionProperty.value, comparer=enums.Comparer.e, value=phone_number_regex)
+        schemas.MatchyCondition(property=enums.ConditionProperty.regex, comparer=enums.Comparer.e, value=phone_number_regex)
     ]),
 ]
 

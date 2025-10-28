@@ -25,7 +25,7 @@ const editableCellClassName = "editableCell";
 const editedCellClassName = "editedCell";
 const invalidCellClassName = "invalidCell";
 
-import { format } from "date-fns";
+import { format, parse, isValid, isAfter, isBefore, differenceInYears } from "date-fns";
 import { fr } from "date-fns/locale";
 
 import readXlsxFile from "read-excel-file";
@@ -667,6 +667,14 @@ export class Matchy extends HTMLElement {
         Number(value),
         Number(condition.value)
       );
+    } else if (condition.property === ConditonProperty.date) {
+      const date = this.parseDate(value);
+      if (!date) return false;
+      
+      return (evaluateConditions[condition.comparer] as (x: number, y: number) => boolean)(
+        differenceInYears(new Date(), date),
+        Number(condition.value)
+      );
     } else if (condition.property === ConditonProperty.regex) {
       return this.checkRegExpConditions(value, String(condition.value));
     }
@@ -674,6 +682,28 @@ export class Matchy extends HTMLElement {
 
   checkRegExpConditions(value: string, conditionValue: string) {
     return evaluateConditions["regExp"](value, conditionValue);
+  }
+
+  // Validate date in format YYYY-MM-DD and between 1900-01-01 and today
+  private parseDate(value: string): Date | null {
+    const date = parse(value, 'yyyy-MM-dd', new Date());
+    
+    if (!isValid(date)) {
+      return null;
+    }
+  
+    const minDate = new Date(1900, 0, 1);
+    const today = new Date();
+    
+    if (isBefore(date, minDate) || isAfter(date, today)) {
+      return null;
+    }
+  
+    return date;
+  }
+
+  isValidDate(value: string): boolean {
+    return this.parseDate(value) !== null;
   }
 
   isValidInteger(value: string): boolean {
@@ -692,6 +722,8 @@ export class Matchy extends HTMLElement {
       return [this.isValidFloat(value), "It's not a valid float"];
     } else if (type === FieldType.bool) {
       return [value in ["Yes", "No"], "Possible values are 'Yes' or 'No'"];
+    } else if (type === FieldType.date) {
+      return [this.isValidDate(value), "Date must be valid and in format YYYY-MM-DD"]; // Anas Khouaja (AK) updated date format message
     }
 
     return [true, ""];

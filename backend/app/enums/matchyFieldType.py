@@ -6,3 +6,4 @@ class FieldType(BasicEnum):
     integer = "integer"
     bool = "bool"
     string = "string"
+    date = "date"
